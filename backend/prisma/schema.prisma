@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum Level {
+  BEGINNER
+  ELEMENTARY
+  INTERMEDIATE
+  UPPER_INTERMEDIATE
+  ADVANCED
+}
+
+model User {
+  id                   Int          @id @default(autoincrement())
+  email                String?      @unique
+  nickname             String?
+  profileImageUrl      String?      @map("profile_image_url")
+  kakaoId              String?      @unique @map("kakao_id")
+  level                Level        @default(BEGINNER)
+  levelScore           Int          @default(0) @map("level_score")
+  currentStreak        Int          @default(0) @map("current_streak")
+  maxStreak            Int          @default(0) @map("max_streak")
+  pushNotificationTime String?      @map("push_notification_time")
+  pushEnabled          Boolean      @default(false) @map("push_enabled")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+  bookmarks            Bookmark[]
+  attendances          Attendance[]
+
+  @@map("users")
+}
+
+model LevelQuestion {
+  id           Int           @id @default(autoincrement())
+  orderIndex   Int           @map("order_index")
+  questionText String        @map("question_text") @db.Text
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  options      LevelOption[]
+
+  @@map("level_questions")
+}
+
+model LevelOption {
+  id         Int           @id @default(autoincrement())
+  questionId Int           @map("question_id")
+  optionText String        @map("option_text") @db.Text
+  score      Int
+  orderIndex Int           @map("order_index")
+  createdAt  DateTime      @default(now()) @map("created_at")
+  question   LevelQuestion @relation(fields: [questionId], references: [id])
+
+  @@map("level_options")
+}
+
+model LevelRange {
+  id       Int   @id @default(autoincrement())
+  level    Level
+  minScore Int   @map("min_score")
+  maxScore Int   @map("max_score")
+
+  @@map("level_ranges")
+}
+
+model Sentence {
+  id                Int        @id @default(autoincrement())
+  englishText       String     @map("english_text") @db.Text
+  koreanTranslation String     @map("korean_translation") @db.Text
+  keyExpression     String     @map("key_expression") @db.Text
+  explanation       String     @db.Text
+  level             Level
+  scheduledDate     DateTime   @map("scheduled_date") @db.Date
+  createdAt         DateTime   @default(now()) @map("created_at")
+  bookmarks         Bookmark[]
+
+  @@map("sentences")
+}
+
+model Bookmark {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  sentenceId Int      @map("sentence_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id])
+  sentence   Sentence @relation(fields: [sentenceId], references: [id])
+
+  @@unique([userId, sentenceId])
+  @@map("bookmarks")
+}
+
+model Attendance {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  attendDate DateTime @map("attend_date") @db.Date
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, attendDate])
+  @@map("attendances")
+}
