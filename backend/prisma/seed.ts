@@ -3,6 +3,13 @@ import { PrismaClient, Level } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Skip if already seeded
+  const existingQuestions = await prisma.levelQuestion.count();
+  if (existingQuestions > 0) {
+    console.log('Database already seeded, skipping.');
+    return;
+  }
+
   // Seed level ranges
   const levelRanges = [
     { level: Level.BEGINNER, minScore: 0, maxScore: 20 },
