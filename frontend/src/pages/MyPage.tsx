@@ -12,13 +12,13 @@ export default function MyPage() {
   const { attendanceDates, currentStreak, maxStreak } = useStreak();
 
   const handleRetakeQuiz = () => {
-    navigate('/level-quiz');
+    navigate('/select-level');
   };
 
   const handleReset = () => {
     if (window.confirm('모든 데이터가 초기화됩니다. 계속하시겠습니까?')) {
       reset();
-      navigate('/level-quiz', { replace: true });
+      navigate('/onboarding', { replace: true });
     }
   };
 

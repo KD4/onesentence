@@ -21,7 +21,7 @@ export default function HomePage() {
   // Redirect to level quiz if no level set
   useEffect(() => {
     if (!level) {
-      navigate('/level-quiz', { replace: true });
+      navigate('/onboarding', { replace: true });
     }
   }, [level, navigate]);
 

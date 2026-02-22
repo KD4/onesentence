@@ -1,4 +1,4 @@
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, VolumeOff } from 'lucide-react';
 import { useTts } from '@/hooks/useTts';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +8,18 @@ interface TtsButtonProps {
 }
 
 export default function TtsButton({ text, className }: TtsButtonProps) {
-  const { isPlaying, speed, speak, stop, cycleSpeed } = useTts();
+  const { isPlaying, isSupported, speed, speak, stop, cycleSpeed } = useTts();
+
+  if (!isSupported) {
+    return (
+      <div className={cn('flex items-center gap-2', className)}>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+          <VolumeOff className="w-4 h-4" />
+          <span>이 브라우저에서는 음성을 지원하지 않아요</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('flex items-center gap-2', className)}>

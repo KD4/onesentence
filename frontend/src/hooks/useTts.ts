@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 
 type TtsSpeed = 0.5 | 0.75 | 1.0;
 
@@ -7,8 +7,15 @@ export function useTts() {
   const [speed, setSpeed] = useState<TtsSpeed>(1.0);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
+  const isSupported = useMemo(
+    () => typeof window !== 'undefined' && 'speechSynthesis' in window,
+    [],
+  );
+
   const speak = useCallback(
     (text: string) => {
+      if (!isSupported) return;
+
       window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -19,15 +26,19 @@ export function useTts() {
       utterance.onerror = () => setIsPlaying(false);
       utteranceRef.current = utterance;
 
-      window.speechSynthesis.speak(utterance);
+      // Workaround: some mobile browsers need a small delay
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, 50);
     },
-    [speed],
+    [speed, isSupported],
   );
 
   const stop = useCallback(() => {
+    if (!isSupported) return;
     window.speechSynthesis.cancel();
     setIsPlaying(false);
-  }, []);
+  }, [isSupported]);
 
   const cycleSpeed = useCallback(() => {
     setSpeed((prev) => {
@@ -37,5 +48,5 @@ export function useTts() {
     });
   }, []);
 
-  return { isPlaying, speed, speak, stop, cycleSpeed };
+  return { isPlaying, isSupported, speed, speak, stop, cycleSpeed };
 }
